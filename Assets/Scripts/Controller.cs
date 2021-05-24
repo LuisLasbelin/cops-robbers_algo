@@ -19,7 +19,6 @@ public class Controller : MonoBehaviour
     private int state;
     private int clickedTile = -1;
     private int clickedCop = 0;
-                    
     void Start()
     {        
         InitTiles();
@@ -49,14 +48,61 @@ public class Controller : MonoBehaviour
     public void InitAdjacencyLists()
     {
         //Matriz de adyacencia
-        int[,] matriu = new int[Constants.NumTiles, Constants.NumTiles];
+        int[,] matriu = new int[8, 8];
 
-        //TODO: Inicializar matriz a 0's
+        // Cada tile
+        for (int tile = 0; tile < tiles.Length; tile++)
+        {
+            //DONE: Inicializar matriz a 0's
+            // Miramos cada fila
+            for (int x = 0; x < 8; x++)
+            {
+                // Miramos cada columna
+                for (int y = 0; y < 8; y++)
+                {
+                    // Ponemos el valor de la casilla actual a 0
+                    matriu[x, y] = 0;
+                }
+            }
+            //DONE: Para cada posición, rellenar con 1's las casillas adyacentes (arriba, abajo, izquierda y derecha)
+            // Fila y columna del tile actual 
+            int fila = tile % 8;
+            int columna = Mathf.FloorToInt(tile / 8);
+            // Arriba
+            if(fila + 1 < 8)
+            {
+                matriu[fila + 1, columna] = 1;
+            }
+            // Abajo
+            if (fila - 1 >= 0)
+            {
+                matriu[fila - 1, columna] = 1;
+            }
+            // Izquierda
+            if (columna - 1 >= 0)
+            {
+                matriu[fila, columna - 1] = 1;
+            }
+            // Derecha
+            if (columna + 1 < 8)
+            {
+                matriu[fila, columna + 1] = 1;
+            }
 
-        //TODO: Para cada posición, rellenar con 1's las casillas adyacentes (arriba, abajo, izquierda y derecha)
-
-        //TODO: Rellenar la lista "adjacency" de cada casilla con los índices de sus casillas adyacentes
-
+            //DONE: Rellenar la lista "adjacency" de cada casilla con los índices de sus casillas adyacentes
+            for (int x = 0; x < 8; x++)
+            {
+                // Miramos cada columna
+                for (int y = 0; y < 8; y++)
+                {
+                    if(matriu[x,y] == 1)
+                    {
+                        // Ponemos en numero de la casilla en la lista de adyacentes
+                        tiles[tile].adjacency.Add(x + y * 8);
+                    }
+                }
+            }
+        }
     }
 
     //Reseteamos cada casilla: color, padre, distancia y visitada
