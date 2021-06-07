@@ -192,7 +192,85 @@ public class Controller : MonoBehaviour
         - Movemos al caco a esa casilla
         - Actualizamos la variable currentTile del caco a la nueva casilla
         */
-        robber.GetComponent<RobberMove>().MoveToTile(tiles[robber.GetComponent<RobberMove>().currentTile]);
+
+        //Cola para el BFS
+        Queue<Tile> nodes = new Queue<Tile>();
+
+        foreach (var tile in tiles)
+        {
+            tile.distance = 999;
+            tile.parent = null;
+            tile.visited = false;
+            tile.selectable = false;
+        }
+        tiles[clickedTile].distance = 0;
+        tiles[clickedTile].parent = null;
+        tiles[clickedTile].visited = true;
+
+        List<int> tilesInRange = new List<int>();
+
+        Queue<Tile> cola = new Queue<Tile>();
+        cola.Enqueue(tiles[clickedTile]);
+        //DONE: Implementar BFS. Los nodos seleccionables los ponemos como selectable=true
+        //Tendrás que cambiar este código por el BFS
+        while (cola.Count > 0)
+        {
+            Tile tile = cola.Dequeue();
+
+            foreach (var adyacente in tile.adjacency)
+            {
+                if (!tiles[adyacente].visited)
+                {
+                    bool ocupada = false;
+                    foreach (var policia in cops)
+                    {
+                        if (policia.GetComponent<CopMove>().currentTile == adyacente)
+                        {
+                            ocupada = true;
+                        }
+                    }
+                    if (ocupada)
+                    {
+                        tiles[adyacente].distance = 999;
+                        tiles[adyacente].visited = true;
+                        tiles[adyacente].parent = tile;
+                    }
+                    else
+                    {
+                        tiles[adyacente].distance = tile.distance + 1;
+                        tiles[adyacente].visited = true;
+                        tiles[adyacente].parent = tile;
+                        cola.Enqueue(tiles[adyacente]);
+                    }
+                }
+            }
+        }
+
+        for (int i = 0; i < Constants.NumTiles; i++)
+        {
+            if (tiles[i].distance <= 2 && tiles[i].distance > 0)
+            {
+                tilesInRange.Add(i);
+            }
+        }
+
+        int masLejana = tilesInRange[0];
+        // Averiguamos la casillas dentro del rango mas lejana a los policias
+        foreach (var tile in tilesInRange)
+        {
+            foreach (var policia in cops)
+            {
+                int distancia = policia.GetComponent<CopMove>().currentTile - tile;
+
+                if(distancia > policia.GetComponent<CopMove>().currentTile - masLejana)
+                {
+                    masLejana = tile;
+                }
+            }
+        }
+        robber.GetComponent<RobberMove>().currentTile = masLejana;
+
+        robber.GetComponent<RobberMove>().MoveToTile(tiles[masLejana]);
     }
 
     public void EndGame(bool end)
@@ -263,7 +341,7 @@ public class Controller : MonoBehaviour
 
         Queue<Tile> cola = new Queue<Tile>();
         cola.Enqueue(tiles[indexcurrentTile]);
-        //TODO: Implementar BFS. Los nodos seleccionables los ponemos como selectable=true
+        //DONE: Implementar BFS. Los nodos seleccionables los ponemos como selectable=true
         //Tendrás que cambiar este código por el BFS
         while (cola.Count > 0)
         {
@@ -299,7 +377,7 @@ public class Controller : MonoBehaviour
 
         for (int i = 0; i < Constants.NumTiles; i++)
         {
-            if(tiles[i].distance <= 2)
+            if(tiles[i].distance <= 2 && tiles[i].distance > 0)
             {
                 tiles[i].selectable = true;
             }
