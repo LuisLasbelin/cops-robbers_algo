@@ -80,7 +80,7 @@ public class Controller : MonoBehaviour
                 matriu[tile, tile - 8] = 1;
             }
             // Izquierda
-            if (tile - 1 >= 0)
+            if (columna - 1 >= 0)
             {
                 matriu[tile, tile - 1] = 1;
             }
@@ -89,8 +89,6 @@ public class Controller : MonoBehaviour
             {
                 matriu[tile, tile + 1] = 1;
             }
-
-            Debug.Log("Casilla: " + tile);
         } // for
 
         //DONE: Rellenar la lista "adjacency" de cada casilla con los índices de sus casillas adyacentes
@@ -251,13 +249,60 @@ public class Controller : MonoBehaviour
         //Cola para el BFS
         Queue<Tile> nodes = new Queue<Tile>();
 
+
+        foreach (var tile in tiles)
+        {
+            tile.distance = 999;
+            tile.parent = null;
+            tile.visited = false;
+            tile.selectable = false;
+        }
+        tiles[indexcurrentTile].distance = 0;
+        tiles[indexcurrentTile].parent = null;
+        tiles[indexcurrentTile].visited = true;
+
+        Queue<Tile> cola = new Queue<Tile>();
+        cola.Enqueue(tiles[indexcurrentTile]);
         //TODO: Implementar BFS. Los nodos seleccionables los ponemos como selectable=true
         //Tendrás que cambiar este código por el BFS
-        for(int i = 0; i < Constants.NumTiles; i++)
+        while (cola.Count > 0)
         {
-            tiles[i].selectable = true;
+            Tile tile = cola.Dequeue();
+
+            foreach (var adyacente in tile.adjacency)
+            {
+                if (!tiles[adyacente].visited)
+                {
+                    bool ocupada = false;
+                    foreach (var policia in cops)
+                    {
+                        if (policia.GetComponent<CopMove>().currentTile == adyacente)
+                        {
+                            ocupada = true;
+                        }
+                    }
+                    if(ocupada)
+                    {
+                        tiles[adyacente].distance = 999;
+                        tiles[adyacente].visited = true;
+                        tiles[adyacente].parent = tile;
+                    } else
+                    {
+                        tiles[adyacente].distance = tile.distance + 1;
+                        tiles[adyacente].visited = true;
+                        tiles[adyacente].parent = tile;
+                        cola.Enqueue(tiles[adyacente]);
+                    }
+                }
+            }
         }
 
+        for (int i = 0; i < Constants.NumTiles; i++)
+        {
+            if(tiles[i].distance <= 2)
+            {
+                tiles[i].selectable = true;
+            }
+        }
     }
-
 }
